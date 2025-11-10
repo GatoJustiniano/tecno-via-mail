@@ -1,6 +1,11 @@
 package Utils;
 
 import java.util.LinkedList;
+import java.util.Base64;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.mail.internet.MimeUtility;
 
 public class EmailHandler {
 
@@ -14,7 +19,7 @@ public class EmailHandler {
     public EmailHandler(String email) {
         this.email = email;
         this.remitente = this.getRemitente();
-        this.subject = this.getSubject();        
+        this.subject = this.getSubject();
     }
 
     private boolean validateSubject() {
@@ -50,7 +55,6 @@ public class EmailHandler {
     }
 
     String getSubject() {
-        //System.out.println("entro al subject");
         int startIndex = 0;
         int endIndex = 0;
         String subject = "";
@@ -58,53 +62,70 @@ public class EmailHandler {
         boolean isHotmail = this.remitente.contains("@hotmail.com");
         boolean isYahoo = this.remitente.contains("@yahoo.com");
         boolean isFicct = this.remitente.contains("@ficct.uagrm.edu.bo");
-        //System.out.println("isHotmail: " + isHotmail + " isYahoo: " + isYahoo + " isFicct: " + isFicct);
+
         if (isHotmail) {
-            //System.out.println("hotmail");
             startIndex = this.email.indexOf("Subject:") + "Subject:".length();
-            String emailRecortado = this.email.substring(startIndex, this.email.length());
-            //System.out.println("emailRecortado: " + emailRecortado);
+            String emailRecortado = this.email.substring(startIndex);
             startIndex = emailRecortado.indexOf("Subject:") + "Subject:".length();
-            emailRecortado = emailRecortado.substring(startIndex, emailRecortado.length());
+            emailRecortado = emailRecortado.substring(startIndex);
             startIndex = emailRecortado.indexOf("Subject:") + "Subject:".length();
             endIndex = emailRecortado.indexOf("Thread-Topic:");
-            subject = emailRecortado.substring(startIndex, endIndex);// aqui la linea 74 o donde se produce el error
+            subject = emailRecortado.substring(startIndex, endIndex);
         } else if (isYahoo) {
-            //System.out.println("yahoo");
             startIndex = this.email.indexOf("Subject:") + "Subject:".length();
-            String emailRecortado = this.email.substring(startIndex, this.email.length());
-            startIndex = this.email.indexOf("Subject:") + "Subject:".length();
-            emailRecortado = emailRecortado.substring(startIndex, emailRecortado.length());
+            String emailRecortado = this.email.substring(startIndex);
             startIndex = emailRecortado.indexOf("Subject:") + "Subject:".length();
-            emailRecortado = emailRecortado.substring(startIndex, emailRecortado.length());
+            emailRecortado = emailRecortado.substring(startIndex);
+            startIndex = emailRecortado.indexOf("Subject:") + "Subject:".length();
+            emailRecortado = emailRecortado.substring(startIndex);
             startIndex = emailRecortado.indexOf("Subject:") + "Subject:".length();
             endIndex = emailRecortado.indexOf("MIME-Version:");
             subject = emailRecortado.substring(startIndex, endIndex);
         } else if (isFicct) {
-            //System.out.println("ficct");
             startIndex = this.email.indexOf("Subject:") + "Subject:".length();
-            String emailRecortado = this.email.substring(startIndex, this.email.length());
+            String emailRecortado = this.email.substring(startIndex);
             startIndex = emailRecortado.indexOf("Subject:") + "Subject:".length();
             endIndex = emailRecortado.indexOf("Content-Type:");
             subject = emailRecortado.substring(startIndex, endIndex);
         } else {
-            //System.out.println("gmail");
             startIndex = this.email.indexOf("Subject:") + "Subject:".length();
             endIndex = this.email.indexOf("To:");
             if (endIndex == -1 || endIndex < startIndex) {
                 endIndex = this.email.indexOf("In-Reply-To:");
             }
+            if (endIndex == -1 || endIndex < startIndex) {
+                endIndex = this.email.length(); // fallback
+            }
             subject = this.email.substring(startIndex, endIndex);
         }
 
-        // eliminar espacios en blanco al inicio y al final
-        subject = subject.trim();
-        // eliminar los \n
-        subject = subject.replace("\n", "");
-        // eliminar los \r
-        subject = subject.replace("\r", "");
-        //System.out.println("subject: "+ subject.toLowerCase().trim());
-        return subject.toLowerCase().trim();
+        // Eliminar saltos de línea y espacios
+        subject = subject.replace("\r", "").trim();
+
+        // Decodificar fragmentos MIME dentro del subject (mezcla de texto plano + MIME)
+        Pattern mimePattern = Pattern.compile("=\\?utf-8\\?(q|b)\\?.*?\\?=", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = mimePattern.matcher(subject);
+        StringBuffer decodedSubject = new StringBuffer();
+
+        while (matcher.find()) {
+            String encoded = matcher.group();
+            try {
+                String decoded = MimeUtility.decodeText(encoded);
+                matcher.appendReplacement(decodedSubject, Matcher.quoteReplacement(decoded));
+            } catch (Exception e) {
+                System.out.println("[WARN] Falló decodificación parcial: " + e.getMessage());
+                matcher.appendReplacement(decodedSubject, Matcher.quoteReplacement(encoded)); // deja sin cambio
+            }
+        }
+        matcher.appendTail(decodedSubject);
+
+        // Reemplazar guiones bajos por espacios (a veces los usan)
+        subject = decodedSubject.toString().replace('_', ' ');
+
+        // Limpieza final
+        subject = subject.trim().toLowerCase();
+        System.out.println("[DEBUG] Subject final decodificado: " + subject);
+        return subject;
     }
 
     String getRemitente() {

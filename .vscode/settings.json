@@ -1,0 +1,28 @@
+{
+    "java.project.referencedLibraries": {
+        "include": [
+            "lib/**/*.jar",
+            "c:\\Users\\Brayan\\Desktop\\Tecno\\postgresql-42.6.0.jar",
+            "c:\\Users\\Brayan\\Desktop\\Tecno\\Escuela Ingenieria\\Parcial 1\\javax.mail.jar",
+            "c:\\Proyectos\\postgresql-42.6.0.jar",
+            "c:\\Proyectos\\itext5-itextpdf-5.5.12.jar",
+            "c:\\Users\\Brayan\\Downloads\\postgresql-42.6.0.jar",
+            "c:\\Users\\Brayan\\Downloads\\javax.mail.jar"
+        ],
+        "exclude": [
+            "c:\\Users\\Brayan\\Desktop\\Tecno\\Galba\\lib\\commons-cli-1.5.0.jar",
+            "c:\\Users\\Brayan\\Desktop\\Tecno\\Galba\\lib\\httpcore5-5.2.4.jar",
+            "c:\\Users\\Brayan\\Desktop\\Tecno\\Galba\\lib\\httpcore5-h2-5.2.4.jar"
+        ]
+    },
+    "workbench.colorCustomizations": {
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#fa1b49",
+        "tab.activeBorder": "#fa1b49",
+        "titleBar.activeBackground": "#dd0531",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#dd053199",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#dd0531"
+}

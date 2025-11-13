@@ -18,8 +18,18 @@ public class PedidoNegocio {
         carritoDato = new CarritoDato();
     }
 
-    public String create(String email, String nit) {
+    public String create(String email, String nit, String tipoPago) {
         try {
+            // Validar tipo de pago
+            if (!tipoPago.equalsIgnoreCase("contado") && !tipoPago.equalsIgnoreCase("credito")) {
+                return "Tipo de pago inválido. Use: contado o credito";
+            }
+            
+            // Validar NIT (debe ser numérico)
+            if (!Validate.isNumber(nit)) {
+                return "El NIT/CI debe ser numérico";
+            }
+            
             int usuario_id = usuarioDato.idByEmail(email);
             if (usuario_id == -1) {
                 return "El usuario no existe.";
@@ -30,7 +40,7 @@ public class PedidoNegocio {
             if (validate_response != "") {
                 return validate_response;
             }
-            pedidoDato = new PedidoDato(usuario_id);
+            pedidoDato = new PedidoDato(usuario_id, tipoPago.toLowerCase(), nit);
             if (pedidoDato.create()) {
                 int pedido_id = pedidoDato.getLastPedido(usuario_id);
                 return pedidoDato.getPedido(pedido_id, usuario_id, nit);

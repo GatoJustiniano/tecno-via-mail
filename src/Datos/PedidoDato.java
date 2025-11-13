@@ -22,6 +22,8 @@ public class PedidoDato {
     private String hora;
     private Float monto_total;
     private String estado;
+    private String tipo_pago;
+    private String nit;
     private int usuario_id;
     private int carrito_id;
 
@@ -32,7 +34,7 @@ public class PedidoDato {
         pedidoDetalleDato = new PedidoDetalleDato();
     }
 
-    public PedidoDato(int usuario_id) {
+    public PedidoDato(int usuario_id, String tipo_pago, String nit) {
         conexion = new ConexionDB();
         carritoDato = new CarritoDato(usuario_id);
         pedidoDetalleDato = new PedidoDetalleDato();
@@ -53,20 +55,24 @@ public class PedidoDato {
         this.hora = (horaActual < 10 ? "0" + horaActual : horaActual) + this.hora.substring(2);
 
         this.usuario_id = usuario_id;
+        this.tipo_pago = tipo_pago;
+        this.nit = nit;
         this.monto_total = carritoDato.getMontoTotal(this.carrito_id);
-        this.estado = "Pendiente";
+        this.estado = "Completado";
     }
 
     // Funciones
     public boolean create() {
         System.out.println("Creando pedido...");
-        String sql = "INSERT INTO pedido (fecha, hora, monto_total, estado, usuario_id) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO pedido (fecha, hora, monto_total, estado, tipo_pago, nit, usuario_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection con = conexion.connect(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, this.fecha);
             ps.setString(2, this.hora);
             ps.setFloat(3, this.monto_total);
             ps.setString(4, this.estado);
-            ps.setInt(5, this.usuario_id);
+            ps.setString(5, this.tipo_pago);
+            ps.setString(6, this.nit);
+            ps.setInt(7, this.usuario_id);
             int rowsAffected = ps.executeUpdate();
             int pedido_id = getLastPedido(this.usuario_id);
             if (rowsAffected > 0 && pedidoDetalleDato.createByCarrito(this.carrito_id, pedido_id)) {
@@ -114,7 +120,7 @@ public class PedidoDato {
             java.sql.Statement consulta;
             ResultSet resultado = null;
             String query = "";
-            query = "SELECT id, fecha, hora, monto_total FROM pedido WHERE id = " + pedido_id;
+            query = "SELECT id, fecha, hora, monto_total, estado, tipo_pago, nit FROM pedido WHERE id = " + pedido_id;
             Connection con = conexion.connect();
             consulta = con.createStatement();
             resultado = consulta.executeQuery(query);
@@ -124,12 +130,16 @@ public class PedidoDato {
                 this.fecha = resultado.getString(2);
                 this.hora = resultado.getString(3);
                 this.monto_total = resultado.getFloat(4);
+                this.estado = resultado.getString(5);
+                this.tipo_pago = resultado.getString(6);
+                this.nit = resultado.getString(7);
             }
             consulta.close();
             con.close();
             String response = "<h1>Gracias por su compra</h1>\n" + "<h2>Detalle del pedido</h2>\n" + "ID: " + this.id
                     + ".<br>"
-                    + "Fecha: " + this.fecha + ".<br>" + "Hora: " + this.hora + ".<br>" + "Monto Total: "
+                    + "Fecha: " + this.fecha + ".<br>" + "Hora: " + this.hora + ".<br>" + "Estado: " + this.estado + ".<br>" + "Tipo de Pago: "
+                    + this.tipo_pago + ".<br>" + "NIT/CI: " + this.nit + ".<br>" + "Monto Total: "
                     + this.monto_total + " Bs. <br>" + "<h2>Lista de productos</h2>\n"
                     + "<table style=\"border-collapse: collapse; width: 100%; border: 1px solid black;\">\n" + "\n"
                     + "  <tr>\n" + "\n"
@@ -183,7 +193,7 @@ public class PedidoDato {
             java.sql.Statement consulta;
             ResultSet resultado = null;
             String query = "";
-            query = "SELECT id, fecha, hora, monto_total FROM pedido WHERE id = " + id;
+            query = "SELECT id, fecha, hora, monto_total, estado, tipo_pago, nit FROM pedido WHERE id = " + id;
             Connection con = conexion.connect();
             consulta = con.createStatement();
             resultado = consulta.executeQuery(query);
@@ -194,11 +204,17 @@ public class PedidoDato {
                 this.fecha = resultado.getString(2);
                 this.hora = resultado.getString(3);
                 this.monto_total = resultado.getFloat(4);
+                this.estado = resultado.getString(5);
+                this.tipo_pago = resultado.getString(6);
+                this.nit = resultado.getString(7);
             }
             tabla = "<h1>Detalle del pedido</h1>\n"
                     + "ID: " + this.id + ".<br>"
                     + "Fecha: " + this.fecha + ".<br>"
                     + "Hora: " + this.hora + ".<br>"
+                    + "Estado: " + this.estado + ".<br>"
+                    + "Tipo de Pago: " + this.tipo_pago + ".<br>"
+                    + "NIT/CI: " + this.nit + ".<br>"
                     + "Monto Total: " + this.monto_total + " Bs. <br>"
                     + "<h2>Lista de productos</h2>\n"
                     + "<table style=\"border-collapse: collapse; width: 100%; border: 1px solid black;\">\n"
@@ -268,12 +284,14 @@ public class PedidoDato {
                     + "    <th style = \"text-align: left; padding: 8px; background-color: #3c4f76; color: white; border: 1px solid black;\">Monto Total</th>\n"
                     + "\n"
                     + "    <th style = \"text-align: left; padding: 8px; background-color: #3c4f76; color: white; border: 1px solid black;\">Estado</th>\n"
+                    + "    <th style = \"text-align: left; padding: 8px; background-color: #3c4f76; color: white; border: 1px solid black;\">Tipo Pago</th>\n"
+                    + "    <th style = \"text-align: left; padding: 8px; background-color: #3c4f76; color: white; border: 1px solid black;\">NIT/CI</th>\n"
                     + "\n";
             String query = "";
             if (params.size() == 0)
-                query = "SELECT id, fecha, hora, monto_total, estado FROM pedido WHERE usuario_id = " + usuario_id;
+                query = "SELECT id, fecha, hora, monto_total, estado, tipo_pago, nit FROM pedido WHERE usuario_id = " + usuario_id;
             else
-                query = "SELECT id, fecha, hora, monto_total, estado FROM pedido WHERE usuario_id = " + usuario_id
+                query = "SELECT id, fecha, hora, monto_total, estado, tipo_pago, nit FROM pedido WHERE usuario_id = " + usuario_id
                         + " AND " + params.get(0) + " ILIKE '%" + params.get(1) + "%'";
             Connection con = conexion.connect();
             consulta = con.createStatement();

@@ -83,9 +83,9 @@ public class Route {
 
         /* Gestionar Pedido */
         if (comando.equals("CONFPEDIDO")) {
-            if (parametros.size() != 1)
-                return "La cantidad de parametros es incorrecta";
-            return pedidoNegocio.create(emailHandler.remitente, parametros.get(0));
+            if (parametros.size() != 2)
+                return "La cantidad de parametros es incorrecta. Formato: CONFPEDIDO [NIT/CI, TIPO_PAGO]";
+            return pedidoNegocio.create(emailHandler.remitente, parametros.get(0), parametros.get(1));
         }
 
         if (comando.equals("LISTPED")) {

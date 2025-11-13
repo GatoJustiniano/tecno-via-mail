@@ -191,7 +191,7 @@ public class UsuarioNegocio {
             this.respuesta = "El nombre debe ser un string y no puede ser vacio";
             return;
         }
-        if (!Validate.isString(params.get(1))) {
+        if (!Validate.isPassword(params.get(1))) {
             this.respuesta = "La contraseña debe ser un string y debe ser mayor a 8 caracteres";
             return;
         }

@@ -63,7 +63,7 @@ public class Help {
 
                 + "<tr> \n \n"
                 + "<td style=\"text-align: left; padding: 8px; border: 1px solid black;\">Confirmar Pedido</td> \n \n"
-                + "<td style=\"text-align: left; padding: 8px; border: 1px solid black;\">CONFPEDIDO [NIT/CI: NUMBER]</td> \n \n"
+                + "<td style=\"text-align: left; padding: 8px; border: 1px solid black;\">CONFPEDIDO [NIT/CI: NUMBER, TIPO_PAGO: STRING]</td> \n \n"
                 + "</tr> \n \n"
                 + "<tr> \n \n"
                 + "<td style=\"text-align: left; padding: 8px; border: 1px solid black;\">Ver Pedidos</td> \n \n"
